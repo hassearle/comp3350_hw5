@@ -14,10 +14,39 @@ ExitProcess PROTO, dwExitCode:DWORD
 	ct byte lengthof pt DUP(?)				; cyphertext
 
 .code 
-  main PROC 
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+main PROC 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 	mov eax, 0
 	
 						
-    invoke ExitProcess, 0 
-  main endp 
+	invoke ExitProcess, 0 
+main endp 
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+encrypt PROC
+;
+;	uses Vigenère cipher to encrypt text
+;	
+;	INPUT: plaintext, encryption key
+;	OUTPUT: cyphertext
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+encrypt endp
+
+
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+decrypt PROC
+;
+;	uses Vigenère cipher to decrypt text
+;	
+;	INPUT: cyphertext, encryption key
+;	OUTPUT: plaintext
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+decrypt endp
+
+
 end main
