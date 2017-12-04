@@ -92,23 +92,23 @@ EncryptTable PROC uses eax edi esi ebx ecx edx
 	mov ebx, 0
 	mov edx, 0
 	mov ecx, 26
-	FirstLoop:
+	FirstLoop:						; makes et[0]: A-Z
 		mov bl, input[edx]
 		mov et[esi], bl
 		inc edx
 		inc esi
 	loop FirstLoop
 
-	mov shift, 1
-	mov ebx, 0
-	mov edx, 0
-	mov ecx, 26;Number of columns
-	mov edi, 0;row counter
-	mov esi, 26;position
+	mov shift, 1					; where to start the alphabet
+	mov ebx, 0						; holder for output
+	mov edx, 0						; loop thu output
+	mov ecx, 26						; Number of columns
+	mov edi, 0						; row counter
+	mov esi, 26						; position
 	OuterLoop:
-		call ShiftAlpha
+		call ShiftAlpha				; remakes output
 		
-		InnerLoop:
+		InnerLoop:					; makes new row of et[]
 			mov bl, output[edx]
 			mov et[esi], bl
 			inc edx
@@ -123,7 +123,7 @@ EncryptTable PROC uses eax edi esi ebx ecx edx
 	jmp OuterLoop
 	
 	Done:
-	invoke ExitProcess, 0
+	
 	ret
 EncryptTable ENDP
 
@@ -170,24 +170,66 @@ ShiftAlpha ENDP
 
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-Encrypt PROC
+Encrypt PROC uses eax ebx ecx edx esi edi
 ;
 ;	uses Vigenère cipher to encrypt text
 ;	
 ;	INPUT: plaintext, encryption key
 ;	OUTPUT: cyphertext
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-	;pushad
-	;mov ecx,bufSize ; loop counter
-	;mov esi,0 ; index 0 in buffer
-	;L1:
-	;	xor buffer[esi],KEY ; translate a byte
-	;	inc esi ; point to next byte
-	;loop L1
-	;popad
-	;ret
+	pushad
+	
+	mov edi, 0							; ScanCount address
+	mov edx, 0							; var for ScanCount
+	mov eax, 0
+	mov ebx, 0							; holds nums for mult
+	mov esi, 0							; loop thu pt[low]/ash[low]
+	mov ecx, lengthof pt
+	EncryptLoop:
+		mov al, pt[esi]					; pt letter
+		call ScanCount					; pt + (how many letters till esi)
+		mov dh, bl						; (how many letters till esi)
+
+		mov al, ash[esi]				; ash letter
+		call ScanCount					; ash + (how many letters till esi)
+		mov dl, bl						; (how many letters till esi)
+
+		mov eax, 26						; 26
+		mul dl							; 26 * ash[esi]
+		add al, dh						; 26 * ash[esi] + pt[esi]
+		mov edi, eax					; mov to reg cuz asm is dumb
+		mov dl, [et + edi]				; letter in EncryptionTable
+		mov ct[esi], dl
+		inc esi
+	loop EncryptLoop
+	
+	popad
+	ret
 Encrypt ENDP
 
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+ScanCount PROC uses ecx edi
+;
+;	scans string for match
+;	
+;	INPUT: string
+;	OUTPUT: int (EAX)
+;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+	mov ebx, lengthof input
+	mov edi, OFFSET input					; EDI points to the string
+	;mov al,'F'								; search for the letter F
+	mov ecx, LENGTHOF input					; set the search count
+	cld										; direction = forward
+	repne scasb								; repeat while not equal
+	jnz quit								; quit if letter not found
+	dec edi									; found: back up EDI
+	inc ecx
+	quit: 
+	sub ebx, ecx
+	ret
+
+ScanCount ENDP
 
 ;=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 Decrypt PROC
